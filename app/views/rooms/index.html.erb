@@ -1,0 +1,11 @@
+<p id="notice"><%= notice %></p>
+
+<h1>Rooms</h1>
+
+<ul class="mt-4 list-unstyled">
+  <%= render @rooms %>
+</ul>
+
+<div class="mt-2">
+  <%= render 'rooms/form', room: @room %>
+</div>
