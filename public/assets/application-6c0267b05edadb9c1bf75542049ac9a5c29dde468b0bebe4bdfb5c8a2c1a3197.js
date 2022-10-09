@@ -11560,19 +11560,25 @@ return jQuery;
 
 }).call(this);
 (function() {
-  var createRoomChannel;
+  var channel, createRoomChannel;
 
-  jQuery(document).on('turbolinks:load', function() {
-    var channel, messages;
-    messages = $('#messages');
-    channel = null;
+  channel = null;
+
+  jQuery(document).on("turbolinks:load", function() {
+    var messages;
+    messages = $("#messages");
     if (messages.length > 0) {
-      createRoomChannel(messages.data('room-id'));
+      channel = createRoomChannel(messages.data("room-id"));
+    } else {
+      if (channel != null) {
+        channel.unsubscribe();
+      }
+      return;
     }
-    return $(document).on('keypress', '#message_body', function(event) {
+    return $(document).on("keypress", "#message_body", function(event) {
       var message;
       message = event.target.value;
-      if (event.keyCode === 13 && message !== '') {
+      if (event.keyCode === 13 && message !== "") {
         App.room.speak(message);
         event.target.value = "";
         return event.preventDefault();
@@ -11586,22 +11592,42 @@ return jQuery;
       roomId: roomId
     }, {
       connected: function() {
-        return console.log('Connected to RoomChannel');
+        return console.log("Connected to RoomChannel");
       },
       disconnected: function() {
-        return console.log('Disconnected from RoomChannel');
+        return console.log("Disconnected from RoomChannel");
       },
       received: function(data) {
-        console.log('Received message: ' + data['message']);
-        return $('#messages').append(data['message']);
+        console.log("Received message: " + data["message"]);
+        return $("#messages").append(data["message"]);
       },
       speak: function(message) {
-        return this.perform('speak', {
+        return this.perform("speak", {
           message: message
         });
       }
     });
   };
+
+}).call(this);
+(function() {
+  App.user_status = App.cable.subscriptions.create("UserStatusChannel", {
+    connected: function() {
+      return console.log("Connected to UserStatusChannel");
+    },
+    disconnected: function() {
+      return console.log("Disconnected to UserStatusChannel");
+    },
+    received: function(data) {
+      console.log("Received message: " + data["nickname"] + " " + data["status"]);
+      if (data["status"] === "online" && !document.querySelector("[id='" + data["id"] + "']")) {
+        $("#online").append("<div id='" + data["id"] + "'>" + data["nickname"] + "</div>");
+      }
+      if (data["status"] === "offline") {
+        return $("#" + data["id"]).remove();
+      }
+    }
+  });
 
 }).call(this);
 // This is a manifest file that'll be compiled into application.js, which will include all the files

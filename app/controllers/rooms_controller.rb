@@ -4,6 +4,7 @@ class RoomsController < ApplicationController
   def index
     @rooms = Room.all
     @room = Room.new
+    @users = User.where(online: true)
   end
 
   def show
