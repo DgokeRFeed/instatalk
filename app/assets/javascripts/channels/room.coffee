@@ -30,5 +30,4 @@ createRoomChannel = (roomId) ->
       $("#messages").animate({scrollTop: $("#messages").get(0).scrollHeight}, 0)
 
     speak: (message) ->
-      if message != ""
-        @perform "speak", message: message
+      @perform "speak", message: message
