@@ -3,29 +3,20 @@ class UserStatusChannel < ApplicationCable::Channel
     stream_from "user_status_channel"
     logger.info "Subscribed to UserStatusChannel"
 
-    current_user.update(online: true)
-    notify("online")
+    @nicknames = "nicknames"
+    $redis.rpush(@nicknames, current_user.nickname)
+    notify
   end
 
   def unsubscribed
     logger.info "Unsubscribed to UserStatusChannel"
 
-    if connections_count == 0
-      current_user.update(online: false)
-      notify("offline")
-    end
+    $redis.lrem(@nicknames, 1, current_user.nickname)
+    notify
   end
 
-  def notify(status)
-    ActionCable.server.broadcast "user_status_channel",
-                                 id: current_user.id,
-                                 nickname: current_user.nickname,
-                                 status: status
-  end
-
-  private
-
-  def connections_count
-    ActionCable.server.connections.count { |connection| connection.current_user == current_user }
+  def notify
+    @online_users = $redis.lrange(@nicknames, 0, -1).uniq
+    ActionCable.server.broadcast "user_status_channel", users: @online_users
   end
 end

@@ -6,10 +6,6 @@ App.user_status = App.cable.subscriptions.create "UserStatusChannel",
     console.log("Disconnected to UserStatusChannel")
 
   received: (data) ->
-    console.log("Received message: #{data["nickname"]} #{data["status"]}")
-
-    if data["status"] == "online" and !document.querySelector("[id='#{data["id"]}']")
-      $("#online").append "<div id='#{data["id"]}'>#{data["nickname"]}</div>"
-
-    if data["status"] == "offline"
-      $("##{data["id"]}").remove()
+    console.log("Received message: #{data["users"]}")
+    users = data["users"].map (user) -> "<div>#{user}</div>"
+    $("#online").html(users.join(""))
